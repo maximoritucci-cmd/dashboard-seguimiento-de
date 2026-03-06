@@ -29,7 +29,7 @@
   /* Cards row */
   /* TEST = azul #1d6ed4 | CONTROL = slate #4b5563 — sin connotación positiva/negativa */
   .kpi-row { display:grid; grid-template-columns: repeat(auto-fit, minmax(170px,1fr)); gap:10px; }
-  .kpi { background:white; border-radius:10px; padding:14px 18px; border-left: 4px solid #e5e7eb; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .kpi { background:white; border-radius:10px; padding:12px 14px; border-left: 4px solid #e5e7eb; box-shadow: 0 1px 4px rgba(0,0,0,.06); min-width:0; overflow:hidden; }
   .kpi .label { font-size: 10px; color: #9ca3af; font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; }
   .kpi .sub { font-size: 11px; color: #9ca3af; margin-top: 2px; }
   .kpi .delta { font-size: 12px; font-weight: 600; margin-top: 5px; }
@@ -50,15 +50,15 @@
   .metric-table td { padding: 7px 12px; border-bottom: 1px solid #f3f4f6; font-size: 13px; }
   .metric-table tr:last-child td { border-bottom: none; }
   .metric-table tr:hover td { background: #fafafa; }
-  .metric-table td.metric-name { font-weight: 500; color: #1f2937; min-width: 220px; }
-  .metric-table td.metric-name.sub { padding-left: 26px; color: #4b5563; font-weight: 400; font-size: 12px; }
+  .metric-table td.metric-name { font-weight: 400; color: #374151; min-width: 0; width: 175px; font-size: 12.5px; }
+  .metric-table td.metric-name.sub { padding-left: 28px; color: #9ca3af; font-weight: 400; font-size: 11.5px; }
   .metric-table td.metric-name.group { font-weight: 700; color: #111827; background: #f9fafb; font-size: 13px; }
   .metric-table td.unit { color: #d1d5db; font-size: 11px; text-align: center; width: 48px; min-width: 48px; max-width: 48px; padding: 7px 4px; }
-  .metric-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
-  .metric-table td.pct { text-align: right; color: #6b7280; font-size: 12px; }
+  .metric-table td.num { text-align: right; font-variant-numeric: tabular-nums; font-size: 13px; white-space: nowrap; }
+  .metric-table td.pct { text-align: right; color: #9ca3af; font-size: 11px; width: 58px; min-width: 58px; max-width: 58px; }
   .metric-table td.var-pos { text-align: right; color: #16a34a; font-weight: 700; }
   .metric-table td.var-neg { text-align: right; color: #dc2626; font-weight: 700; }
-  .metric-table td.var-neu { text-align: right; color: #9ca3af; font-weight: 500; }
+  .metric-table td.var-neu { text-align: right; color: #d1d5db; font-weight: 400; font-size: 12px; white-space: nowrap; }
   .metric-table td.na { text-align: center; color: #e5e7eb; font-size: 12px; }
   .metric-table td.highlight-test { background: #eff6ff; }       /* azul muy claro */
   .metric-table td.highlight-ctrl { background: #f9fafb; }       /* gris muy claro */
@@ -200,8 +200,26 @@ function fmt(v, type='#') {
   if (type === '#') return Math.round(v).toLocaleString('es-AR');
   if (type === '$') return '$ ' + Math.round(v).toLocaleString('es-AR');
   if (type === '%') return (v * 100).toFixed(1) + '%';
-  if (type === 'pct') return v.toFixed(1) + '%';  // already in %
+  if (type === 'pct') return v.toFixed(1) + '%';
   return v;
+}
+// Compact for KPI cards
+function fmtC(v, type='#') {
+  if (v === null || v === undefined || isNaN(v)) return '–';
+  const abs = Math.abs(v);
+  if (type === '$') {
+    if (abs >= 1e9) return '$ ' + (v/1e9).toFixed(1) + 'B';
+    if (abs >= 1e6) return '$ ' + (v/1e6).toFixed(1) + 'M';
+    if (abs >= 1e3) return '$ ' + (v/1e3).toFixed(0) + 'K';
+    return '$ ' + Math.round(v).toLocaleString('es-AR');
+  }
+  if (type === '#') {
+    if (abs >= 1e6) return (v/1e6).toFixed(2) + 'M';
+    if (abs >= 1e3) return (v/1e3).toFixed(0) + 'K';
+    return Math.round(v).toLocaleString('es-AR');
+  }
+  if (type === 'pct') return v.toFixed(1) + '%';
+  return fmt(v, type);
 }
 
 function pct(num, den) {
@@ -389,14 +407,14 @@ function renderKPIs(d) {
     return `
     <div class="kpi">
       <div class="label">${label}</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
-        <div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:5px;min-width:0">
+        <div style="min-width:0;overflow:hidden">
           <div style="font-size:9px;color:#1d6ed4;font-weight:800;letter-spacing:.5px;margin-bottom:2px">TEST</div>
-          <div style="font-size:18px;font-weight:800;color:#1d6ed4;font-variant-numeric:tabular-nums">${fmt(testVal,type)}</div>
+          <div style="font-size:17px;font-weight:800;color:#1d6ed4;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${fmtC(testVal,type)}</div>
         </div>
-        <div>
+        <div style="min-width:0;overflow:hidden">
           <div style="font-size:9px;color:#4b5563;font-weight:800;letter-spacing:.5px;margin-bottom:2px">CONTROL</div>
-          <div style="font-size:18px;font-weight:800;color:#4b5563;font-variant-numeric:tabular-nums">${fmt(ctrlVal,type)}</div>
+          <div style="font-size:17px;font-weight:800;color:#4b5563;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${fmtC(ctrlVal,type)}</div>
         </div>
       </div>
       ${diff !== null ? `<div class="delta ${dClass}">${dSign}${fmt(diff,type)} vs Control</div>` : ''}
@@ -472,31 +490,31 @@ function renderCountTable(d) {
   const html = `<table>
     <thead>
       <tr>
-        <th class="left" style="min-width:230px">Métrica</th>
+        <th class="left" style="min-width:175px;width:175px">Métrica</th>
         <th class="unit-h">U.</th>
-        <th class="test">Test</th>
-        <th class="test">%</th>
-        <th class="control">Control</th>
-        <th class="control">%</th>
-        <th class="var">Var T–C</th>
+        <th class="test" style="width:105px;min-width:80px">Test</th>
+        <th class="test" style="width:58px;min-width:58px;max-width:58px">%</th>
+        <th class="control" style="width:105px;min-width:80px">Control</th>
+        <th class="control" style="width:58px;min-width:58px;max-width:58px">%</th>
+        <th class="var" style="width:80px;min-width:60px">Var T–C</th>
       </tr>
     </thead>
     <tbody>
       ${row('Total Sellers',          mpTv.total,  mpCv.total,  mpTv.total,  mpCv.total,  'group', '#', '', 'neu')}
-      ${row('Oferta (Tasa BAU)',       mpTv.oferta, mpCv.oferta, mpTv.total,  mpCv.total,  '',      '#', '', 'neu')}
+      ${row('Oferta (Tasa BAU)',       mpTv.oferta, mpCv.oferta, mpTv.total,  mpCv.total,  'mid',   '#', '', 'neu')}
       ${row('Elegibles Tasa 0% <span class="tag-tasa0">T0</span>', mpTv.ganElig, mpCv.ganElig, mpTv.oferta, mpCv.oferta, '', '#', '', 'pos')}
-      ${row('Oferta Tasa BAU',         mpTv.oferta, mpCv.oferta, mpTv.oferta, mpCv.oferta, '',      '#', '', 'neu')}
-      ${row('Challenge ganado en mes', mpTv.gano,   mpCv.gano,   mpTv.total,  mpCv.total,  '',      '#', '', 'pos')}
+      ${row('Oferta Tasa BAU',         mpTv.oferta, mpCv.oferta, mpTv.oferta, mpCv.oferta, 'mid',   '#', '', 'neu')}
+      ${row('Challenge ganado en mes', mpTv.gano,   mpCv.gano,   mpTv.total,  mpCv.total,  'mid',   '#', '', 'pos')}
       <tr class="divider-row"><td colspan="7"></td></tr>
       ${row('Originación Total',  moTv.total,  moCv.total,  moTv.total, moCv.total, 'group', '#', '', 'pos')}
-      ${row('Tasa 0% <span class="tag-tasa0">T0</span>',  moTv.t0cnt,  moCv.t0cnt,  moTv.total, moCv.total, '', '#', '', 'pos')}
-      ${row('Tasa BAU <span class="tag-bau">BAU</span>',  moTv.bauCnt, moCv.bauCnt, moTv.total, moCv.total, '', '#', '', 'neu')}
+      ${row('Tasa 0% <span class="tag-tasa0">T0</span>',  moTv.t0cnt,  moCv.t0cnt,  moTv.total, moCv.total, 'mid', '#', '', 'pos')}
+      ${row('Tasa BAU <span class="tag-bau">BAU</span>',  moTv.bauCnt, moCv.bauCnt, moTv.total, moCv.total, 'mid', '#', '', 'neu')}
       ${PLAZOS.map((p,i) => row('┣ '+p, moTv.byPlazo[i]?.cnt||0, moCv.byPlazo[i]?.cnt||0, bauT, bauC, 'sub', '#', '', 'neu')).join('')}
       ${row('┗ No identificado',  moTv.bauOtro, moCv.bauOtro, bauT, bauC, 'sub', '#', '', 'neu')}
       <tr class="divider-row"><td colspan="7"></td></tr>
       ${adoptRow('Adopción Total (%)',    adoptT, adoptC, 'group', 'pos')}
-      ${adoptRow('Tasa 0% <span class="tag-tasa0">T0</span>',  t0adT,  t0adC,  '',     'pos')}
-      ${adoptRow('Tasa BAU <span class="tag-bau">BAU</span>',  bauAdT, bauAdC, '',     'neu')}
+      ${adoptRow('Tasa 0% <span class="tag-tasa0">T0</span>',  t0adT,  t0adC,  'mid',  'pos')}
+      ${adoptRow('Tasa BAU <span class="tag-bau">BAU</span>',  bauAdT, bauAdC, 'mid',  'neu')}
       ${PLAZOS.map((p,i) => adoptRow('┣ '+p, pct(moTv.byPlazo[i]?.cnt||0, mpTv.oferta), pct(moCv.byPlazo[i]?.cnt||0, mpCv.oferta), 'sub', 'neu')).join('')}
       ${adoptRow('┗ No identificado', pct(moTv.bauOtro, mpTv.oferta), pct(moCv.bauOtro, mpCv.oferta), 'sub', 'neu')}
     </tbody>
@@ -553,24 +571,24 @@ function renderLCTable(d) {
   const html = `<table>
     <thead>
       <tr>
-        <th class="left" style="min-width:230px">Métrica</th>
+        <th class="left" style="min-width:175px;width:175px">Métrica</th>
         <th class="unit-h">U.</th>
-        <th class="test">Test</th>
-        <th class="test">%</th>
-        <th class="control">Control</th>
-        <th class="control">%</th>
-        <th class="var">Var T–C</th>
+        <th class="test" style="width:105px;min-width:80px">Test</th>
+        <th class="test" style="width:58px;min-width:58px;max-width:58px">%</th>
+        <th class="control" style="width:105px;min-width:80px">Control</th>
+        <th class="control" style="width:58px;min-width:58px;max-width:58px">%</th>
+        <th class="var" style="width:80px;min-width:60px">Var T–C</th>
       </tr>
     </thead>
     <tbody>
       ${row('Total Sellers (TPV)',    mpTv.tpv,        mpCv.tpv,        null,                null,                'group', 'neu')}
-      ${row('Oferta (propuesta LC)',  mpTv.prop,       mpCv.prop,       mpTv.tpv,            mpCv.tpv,            '',      'neu')}
+      ${row('Oferta (propuesta LC)',  mpTv.prop,       mpCv.prop,       mpTv.tpv,            mpCv.tpv,            'mid',   'neu')}
       ${row('Elegibles Tasa 0% <span class="tag-tasa0">T0</span>', mpTv.propElig, mpCv.propElig, mpTv.prop, mpCv.prop, '', 'pos')}
-      ${row('TPV sellers c/ challenge (avg)', avgTpvT, avgTpvC, null, null, '', 'pos')}
+      ${row('TPV sellers c/ challenge (avg)', avgTpvT, avgTpvC, null, null, 'mid', 'pos')}
       <tr class="divider-row"><td colspan="7"></td></tr>
       ${row('Originación Total',      moTv.totalMonto, moCv.totalMonto, moTv.totalMonto,     moCv.totalMonto,     'group', 'pos')}
-      ${row('Tasa 0% <span class="tag-tasa0">T0</span>',  moTv.t0Monto,  moCv.t0Monto,  moTv.totalMonto, moCv.totalMonto, '',  'pos')}
-      ${row('Tasa BAU <span class="tag-bau">BAU</span>',  moTv.bauMonto, moCv.bauMonto, moTv.totalMonto, moCv.totalMonto, '',  'neu')}
+      ${row('Tasa 0% <span class="tag-tasa0">T0</span>',  moTv.t0Monto,  moCv.t0Monto,  moTv.totalMonto, moCv.totalMonto, 'mid', 'pos')}
+      ${row('Tasa BAU <span class="tag-bau">BAU</span>',  moTv.bauMonto, moCv.bauMonto, moTv.totalMonto, moCv.totalMonto, 'mid', 'neu')}
       ${PLAZOS.map((p,i) => row('┣ '+p, moTv.byPlazo[i]?.monto||0, moCv.byPlazo[i]?.monto||0, moTv.bauMonto, moCv.bauMonto, 'sub', 'neu')).join('')}
       ${row('┗ No identificado',       moTv.bauOtroM, moCv.bauOtroM, moTv.bauMonto, moCv.bauMonto, 'sub', 'neu')}
       <tr class="divider-row"><td colspan="7"></td></tr>
